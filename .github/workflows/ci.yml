@@ -51,3 +51,26 @@ jobs:
       # Step 9: Push Docker image to DockerHub
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/hello-docker:latest
+
+  deploy:
+    name: Deploy to AWS EC2
+    needs: build # this makes sure it runs after CI build/test job
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Connect to EC2 and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "Deploying new Docker image..."
+            docker stop hello-docker || true
+            docker rm hello-docker || true
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/hello-docker:latest
+            docker run -d -p 5000:5000 --name hello-docker ${{ secrets.DOCKERHUB_USERNAME }}/hello-docker:latest
+            echo "✅ Deployment completed successfully!"
