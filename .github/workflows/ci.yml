@@ -36,7 +36,7 @@ jobs:
       # Step 6: Test app with curl
       - name: Test endpoint
         run:
-          curl -f http://localhost:5000
+          curl -f http://localhost:5000/test
           # Step 7: Log in to DockerHub
       - name: Log in to DockerHub
         uses: docker/login-action@v2
